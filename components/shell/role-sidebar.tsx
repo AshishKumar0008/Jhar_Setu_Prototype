@@ -2,6 +2,8 @@
 
 import React, { useEffect } from "react";
 import { UserRole } from "./app-navbar";
+import { Logo } from "@/components/branding/logo";
+import { useLanguage } from "@/lib/i18n/language-context";
 import {
   X,
   LayoutDashboard,
@@ -15,37 +17,20 @@ import {
   GitFork,
   History,
   Briefcase,
-  ClockAlert,
   CheckCircle2,
   CheckSquare,
   FolderKanban,
   GraduationCap,
   Handshake,
   ShieldCheck,
-  PlayCircle,
   BarChart3,
-  Scale,
-  FileSpreadsheet,
-  CreditCard,
   Compass,
-  FileSearch,
-  Bookmark,
-  Edit3,
   Users,
   Bell,
   Building2,
   Landmark,
-  Users2,
-  TrendingUp,
-  Activity,
-  UserCheck,
-  KeyRound,
-  Tags,
-  MapPin,
   GitMerge,
-  Mail,
   Cpu,
-  Search,
   Database,
   LucideIcon,
 } from "lucide-react";
@@ -58,9 +43,8 @@ export interface NavItemConfig {
   badge?: string | number;
 }
 
-export const ROLE_NAV_CONFIGS: Record<
-  Exclude<UserRole, "citizen" | "assisted_operator">,
-  NavItemConfig[]
+export const ROLE_NAV_CONFIGS: Partial<
+  Record<Exclude<UserRole, "citizen" | "assisted_operator">, NavItemConfig[]>
 > = {
   reviewer: [
     { id: "dashboard", label: "Dashboard", hindiLabel: "डैशबोर्ड", icon: LayoutDashboard },
@@ -74,65 +58,86 @@ export const ROLE_NAV_CONFIGS: Record<
     { id: "matching-runs", label: "Matching runs", hindiLabel: "मिलान सत्र", icon: GitFork },
     { id: "audit-view", label: "Audit view", hindiLabel: "ऑडिट अवलोकन", icon: History },
   ],
-  department_officer: [
-    { id: "dashboard", label: "Dashboard", hindiLabel: "डैशबोर्ड", icon: LayoutDashboard },
-    { id: "assigned-cases", label: "Assigned authority cases", hindiLabel: "आवंटित मामले", icon: Briefcase, badge: "5" },
-    { id: "case-detail-actions", label: "Case detail / actions", hindiLabel: "मामला विवरण / कार्रवाई", icon: FileText },
-    { id: "sla-overdue-queue", label: "SLA / overdue queue", hindiLabel: "एस.एल.ए / अतिदेय कतार", icon: ClockAlert, badge: "1" },
-    { id: "resolution-verification", label: "Resolution verification", hindiLabel: "समाधान सत्यापन", icon: CheckCircle2 },
+  DEPARTMENT_OFFICER: [
+    { id: "overview", label: "Overview", hindiLabel: "अवलोकन", icon: LayoutDashboard },
+    { id: "new-reports", label: "New Reports", hindiLabel: "नई रिपोर्ट", icon: Inbox, badge: "1" },
+    { id: "active-cases", label: "Active Cases", hindiLabel: "सक्रिय मामले", icon: FileCheck2, badge: "2" },
+    { id: "clusters", label: "Clusters", hindiLabel: "क्लस्टर", icon: Layers },
+    { id: "resolved", label: "Resolved", hindiLabel: "समाधान किए गए", icon: CheckCircle2 },
+    { id: "analytics", label: "Analytics", hindiLabel: "विश्लेषण", icon: BarChart3 },
+    { id: "notifications", label: "Notifications", hindiLabel: "सूचनाएं", icon: Bell, badge: "2" },
+  ],
+  INNOVATION_CELL: [
+    { id: "overview", label: "Overview", hindiLabel: "अवलोकन", icon: LayoutDashboard },
+    { id: "candidates", label: "Innovation Candidates", hindiLabel: "नवाचार उम्मीदवार", icon: Sparkles, badge: "2" },
+    { id: "challenges", label: "Challenges", hindiLabel: "चुनौतियां", icon: Award, badge: "1" },
+    { id: "university-matching", label: "University Matching", hindiLabel: "विश्वविद्यालय मिलान", icon: GitMerge },
+    { id: "projects", label: "Projects", hindiLabel: "परियोजनाएं", icon: FolderKanban },
+    { id: "partnerships", label: "Industry Partnerships", hindiLabel: "उद्योग साझेदारियां", icon: Building2 },
+    { id: "pilot-readiness", label: "Pilot Readiness", hindiLabel: "पायलट तैयारी", icon: CheckCircle2 },
+    { id: "audit-timeline", label: "Audit Timeline", hindiLabel: "ऑडिट समयरेखा", icon: History },
+    { id: "notifications", label: "Notifications", hindiLabel: "सूचनाएं", icon: Bell, badge: "3" },
+  ],
+  UNIVERSITY: [
+    { id: "overview", label: "Overview", hindiLabel: "अवलोकन", icon: LayoutDashboard },
+    { id: "assigned-challenges", label: "Assigned Challenges", hindiLabel: "सौंपी गई चुनौतियां", icon: Compass, badge: "1" },
+    { id: "my-projects", label: "My Projects", hindiLabel: "मेरी परियोजनाएं", icon: FolderKanban, badge: "2" },
+    { id: "teams", label: "Teams", hindiLabel: "टीमें", icon: Users },
+    { id: "faculty-mentors", label: "Faculty Mentors", hindiLabel: "संकाय मार्गदर्शक", icon: GraduationCap },
+    { id: "proposals", label: "Proposals", hindiLabel: "प्रस्ताव", icon: FileText },
+    { id: "milestones", label: "Milestones", hindiLabel: "मील के पत्थर", icon: CheckSquare },
+    { id: "industry-support", label: "Industry Support", hindiLabel: "उद्योग सहायता", icon: Handshake, badge: "1" },
+    { id: "notifications", label: "Notifications", hindiLabel: "सूचनाएं", icon: Bell, badge: "2" },
+  ],
+  INDUSTRY: [
+    { id: "overview", label: "Overview", hindiLabel: "अवलोकन", icon: LayoutDashboard },
+    { id: "opportunities", label: "Opportunities", hindiLabel: "अवसर", icon: Compass, badge: "2" },
+    { id: "partnerships", label: "My Partnerships", hindiLabel: "मेरी साझेदारियां", icon: Handshake, badge: "1" },
+    { id: "funding", label: "Funding", hindiLabel: "वित्तपोषण", icon: Landmark },
+    { id: "mentorship", label: "Mentorship", hindiLabel: "मार्गदर्शन", icon: GraduationCap },
+    { id: "prototype-support", label: "Prototype Support", hindiLabel: "प्रोटोटाइप सहायता", icon: Sparkles },
+    { id: "pilot-support", label: "Pilot Support", hindiLabel: "पायलट सहायता", icon: ShieldCheck },
+    { id: "notifications", label: "Notifications", hindiLabel: "सूचनाएं", icon: Bell, badge: "1" },
+  ],
+  ADMIN: [
+    { id: "overview", label: "Overview", hindiLabel: "अवलोकन", icon: LayoutDashboard },
+    { id: "users", label: "Users", hindiLabel: "उपयोगकर्ता", icon: Users, badge: "5" },
+    { id: "departments", label: "Departments", hindiLabel: "विभाग", icon: Building2 },
+    { id: "universities", label: "Universities", hindiLabel: "विश्वविद्यालय", icon: GraduationCap },
+    { id: "industries", label: "Industries", hindiLabel: "उद्योग", icon: Briefcase },
+    { id: "ai-config", label: "AI Configuration", hindiLabel: "एआई विन्यास", icon: Cpu },
+    { id: "knowledge-base", label: "Knowledge Base", hindiLabel: "ज्ञान कोष", icon: Database },
+    { id: "system-audit", label: "System Audit", hindiLabel: "सिस्टम ऑडिट", icon: History },
   ],
   government: [
-    { id: "dashboard", label: "Dashboard", hindiLabel: "डैशबोर्ड", icon: LayoutDashboard },
-    { id: "validation-queue", label: "Validation queue", hindiLabel: "सत्यापन कतार", icon: CheckSquare, badge: "2" },
-    { id: "challenge-portfolio", label: "Challenge portfolio", hindiLabel: "चुनौती पोर्टफोलियो", icon: FolderKanban },
-    { id: "university-proposals", label: "University proposals", hindiLabel: "विश्वविद्यालय प्रस्ताव", icon: GraduationCap },
-    { id: "commitment-status", label: "Commitment status", hindiLabel: "प्रतिबद्धता स्थिति", icon: Handshake },
-    { id: "pilot-readiness", label: "Pilot readiness", hindiLabel: "पायलट तत्परता", icon: ShieldCheck },
-    { id: "active-pilots", label: "Active pilots", hindiLabel: "सक्रिय पायलट", icon: PlayCircle },
-    { id: "evaluation", label: "Evaluation", hindiLabel: "मूल्यांकन", icon: BarChart3 },
-    { id: "adoption-decisions", label: "Adoption decisions", hindiLabel: "अंगीकरण निर्णय", icon: Scale },
-    { id: "aggregate-reports", label: "Aggregate reports", hindiLabel: "समेकित रिपोर्ट", icon: FileSpreadsheet },
-  ],
-  university: [
-    { id: "dashboard", label: "Dashboard", hindiLabel: "डैशबोर्ड", icon: LayoutDashboard },
-    { id: "capability-card", label: "Capability card", hindiLabel: "क्षमता पत्रक", icon: CreditCard },
-    { id: "challenge-marketplace", label: "Challenge marketplace", hindiLabel: "चुनौती बाज़ार", icon: Compass },
-    { id: "challenge-detail", label: "Challenge detail", hindiLabel: "चुनौती विवरण", icon: FileSearch },
-    { id: "interests", label: "Interests", hindiLabel: "रुचियां", icon: Bookmark },
-    { id: "proposal-workspace", label: "Proposal workspace", hindiLabel: "प्रस्ताव कार्यक्षेत्र", icon: Edit3 },
-    { id: "team-mentors", label: "Team / mentors", hindiLabel: "दल / मार्गदर्शक", icon: Users },
-    { id: "notifications", label: "Notifications", hindiLabel: "सूचनाएं", icon: Bell, badge: "4" },
+    { id: "overview", label: "Overview", hindiLabel: "अवलोकन", icon: LayoutDashboard },
   ],
   industry_csr: [
-    { id: "dashboard", label: "Dashboard", hindiLabel: "डैशबोर्ड", icon: LayoutDashboard },
-    { id: "org-verification", label: "Organization verification", hindiLabel: "संस्था सत्यापन", icon: Building2 },
-    { id: "challenge-marketplace", label: "Challenge marketplace", hindiLabel: "चुनौती बाज़ार", icon: Compass },
-    { id: "challenge-detail", label: "Challenge detail", hindiLabel: "चुनौती विवरण", icon: FileSearch },
-    { id: "commitments-ledger", label: "Commitments ledger", hindiLabel: "प्रतिबद्धता बही", icon: Landmark },
-    { id: "mentor-roster", label: "Mentor roster", hindiLabel: "मार्गदर्शक सूची", icon: Users2 },
-    { id: "impact-reports", label: "Impact / status reports", hindiLabel: "प्रभाव रिपोर्ट", icon: TrendingUp },
+    { id: "overview", label: "Overview", hindiLabel: "अवलोकन", icon: LayoutDashboard },
+  ],
+  department_officer: [
+    { id: "overview", label: "Overview", hindiLabel: "अवलोकन", icon: LayoutDashboard },
   ],
   admin: [
-    { id: "dashboard-health", label: "Dashboard/health", hindiLabel: "डैशबोर्ड / स्वास्थ्य", icon: Activity },
-    { id: "users-org-verification", label: "Users and org verification", hindiLabel: "उपयोगकर्ता सत्यापन", icon: UserCheck },
-    { id: "roles-scopes", label: "Roles and scopes", hindiLabel: "भूमिकाएं एवं सीमाएं", icon: KeyRound },
-    { id: "taxonomy", label: "Taxonomy", hindiLabel: "वर्गीकरण", icon: Tags },
-    { id: "location-hierarchy", label: "Location hierarchy", hindiLabel: "स्थान पदानुक्रम", icon: MapPin },
-    { id: "authority-mappings", label: "Authority mappings", hindiLabel: "प्राधिकरण मानचित्रण", icon: GitMerge },
-    { id: "notification-templates", label: "Notification templates", hindiLabel: "सूचना प्रारूप", icon: Mail },
-    { id: "model-prompt-registry", label: "Model/prompt registry", hindiLabel: "मॉडल व प्रॉम्प्ट पंजी", icon: Cpu },
-    { id: "audit-search", label: "Audit search", hindiLabel: "ऑडिट खोज", icon: Search },
-    { id: "data-retention-export", label: "Data retention/export controls", hindiLabel: "डेटा प्रतिधारण व निर्यात", icon: Database },
+    { id: "overview", label: "Overview", hindiLabel: "अवलोकन", icon: LayoutDashboard },
+  ],
+  university: [
+    { id: "overview", label: "Overview", hindiLabel: "अवलोकन", icon: LayoutDashboard },
   ],
 };
 
-const ROLE_TITLES: Record<
-  Exclude<UserRole, "citizen" | "assisted_operator">,
-  { en: string; hi: string }
+const ROLE_TITLES: Partial<
+  Record<Exclude<UserRole, "citizen" | "assisted_operator">, { en: string; hi: string }>
 > = {
+  DEPARTMENT_OFFICER: { en: "Department Officer", hi: "विभागीय अधिकारी" },
+  INNOVATION_CELL: { en: "Innovation Cell", hi: "नवाचार प्रकोष्ठ" },
+  UNIVERSITY: { en: "University Partner", hi: "विश्वविद्यालय भागीदार" },
+  INDUSTRY: { en: "Industry & CSR Partner", hi: "उद्योग व सीएसआर भागीदार" },
+  ADMIN: { en: "System Administrator", hi: "प्रणाली प्रशासक" },
+  // Legacy keys
   reviewer: { en: "Reviewer Workspace", hi: "समीक्षक कार्यक्षेत्र" },
   department_officer: { en: "Department Officer", hi: "विभागीय अधिकारी" },
-  government: { en: "Government Validation", hi: "सरकारी सत्यापन" },
+  government: { en: "Department Validation", hi: "विभागीय सत्यापन" },
   university: { en: "University Partner", hi: "विश्वविद्यालय भागीदार" },
   industry_csr: { en: "Industry & CSR Partner", hi: "उद्योग व सीएसआर भागीदार" },
   admin: { en: "System Administrator", hi: "प्रणाली प्रशासक" },
@@ -155,6 +160,8 @@ export function RoleSidebar({
   onSelectItem,
   className = "",
 }: RoleSidebarProps) {
+  const { language } = useLanguage();
+
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -174,6 +181,7 @@ export function RoleSidebar({
   const roleKey = currentRole as Exclude<UserRole, "citizen" | "assisted_operator">;
   const navItems = ROLE_NAV_CONFIGS[roleKey] || [];
   const roleTitle = ROLE_TITLES[roleKey] || { en: currentRole, hi: "" };
+  const roleTitleText = language === "hi" && roleTitle.hi ? roleTitle.hi : roleTitle.en;
 
   const isValidActive = Boolean(activeItemId && navItems.some((item) => item.id === activeItemId));
   const currentActive = isValidActive
@@ -193,45 +201,48 @@ export function RoleSidebar({
         />
       )}
 
-      {/* Floating Role Sidebar Panel: Slides in from left, floats above page canvas without pushing content */}
+      {/* Floating Role Sidebar Panel */}
       <aside
-        aria-label={`${roleTitle.en} navigation`}
+        aria-label={`${roleTitleText} navigation`}
         aria-hidden={!isOpen}
         inert={!isOpen}
         className={`fixed top-0 left-0 bottom-0 z-50 w-72 sm:w-80 bg-white border-r border-[#E2E5EA] shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0 pointer-events-auto" : "-translate-x-full pointer-events-none"
         } ${className}`}
       >
-        {/* Sidebar Header: Current Role Name + Close Button */}
-        <div className="flex h-16 items-center justify-between px-5 border-b border-[#E2E5EA] bg-[#F7F8FA]/60">
-          <div className="flex flex-col min-w-0 pr-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#0F62B4]">
-              Role Navigation
-            </span>
-            <h2 className="text-base font-bold text-[#111827] truncate">
-              {roleTitle.en}
-            </h2>
+        {/* Sidebar Header: JharSetu Logo + Role Info + Close Button */}
+        <div className="flex flex-col border-b border-[#E2E5EA] bg-[#F7F8FA]/60">
+          <div className="flex h-16 items-center justify-between px-4">
+            <Logo variant="full" size="sm" />
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-md text-[#6B7280] hover:text-[#111827] hover:bg-[#E2E5EA]/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F62B4]"
+              aria-label="Close navigation sidebar"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-[#6B7280] hover:text-[#111827] hover:bg-[#E2E5EA]/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F62B4]"
-            aria-label="Close navigation sidebar"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="px-4 pb-2.5 pt-0">
+            <div className="flex items-center gap-1.5 text-xs text-[#0F62B4] font-semibold">
+              <span className="uppercase tracking-wider text-[10px] text-[#6B7280]">
+                {language === "hi" ? "भूमिका:" : "Role:"}
+              </span>
+              <span className="font-bold truncate">{roleTitleText}</span>
+            </div>
+          </div>
         </div>
 
         {/* Navigation Item List: Fixed master screen tree per role */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1 scrollbar-thin">
           <div className="px-3 pb-2 text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">
-            Workspace Views ({navItems.length})
+            {language === "hi" ? "कार्यक्षेत्र दृश्य" : "Workspace Views"} ({navItems.length})
           </div>
 
           {navItems.map((item) => {
             const isActive = currentActive === item.id;
             const Icon = item.icon;
+            const itemLabel = language === "hi" && item.hindiLabel ? item.hindiLabel : item.label;
 
             return (
               <button
@@ -252,7 +263,7 @@ export function RoleSidebar({
                       isActive ? "text-[#0F62B4]" : "text-[#6B7280] group-hover:text-[#0F62B4]"
                     }`}
                   />
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{itemLabel}</span>
                 </div>
 
                 {item.badge && (
@@ -271,17 +282,19 @@ export function RoleSidebar({
           })}
         </nav>
 
-        {/* Sidebar Footer: Informational / System metadata only. No "New Project" record creation button! */}
+        {/* Sidebar Footer: Informational metadata */}
         <div className="p-4 border-t border-[#E2E5EA] bg-[#F7F8FA]/50 text-[11px] text-[#6B7280]">
           <div className="flex items-center justify-between">
             <span>SIH 26043 Architecture</span>
             <span className="font-mono text-[10px] text-[#0F62B4]">v2.1</span>
           </div>
           <p className="mt-1 text-[10px] text-[#6B7280]">
-            Human-governed civic decision system
+            {language === "hi" ? "मानव-नियंत्रित नागरिक निर्णय प्रणाली" : "Human-governed civic decision system"}
           </p>
         </div>
       </aside>
     </>
   );
 }
+
+export default RoleSidebar;

@@ -18,8 +18,7 @@ needing it now.
 | AI worker   | Python 3.11, FastAPI, Pydantic                             | Async transcription, PII redaction, structured extraction, embeddings |
 | Database    | PostgreSQL 16 + PostGIS + pgvector, TypeORM migrations     | Transactional source of truth, geo queries, vector similarity search |
 | Jobs/queue  | Redis + BullMQ                                             | Async AI jobs, notifications, retries                      |
-| Storage     | S3-compatible (MinIO locally)                              | Encrypted evidence media, signed URLs                      |
-| Maps/Charts | MapLibre, Apache ECharts                                   | Cluster geography, dashboard visuals                        |
+| Maps/Charts | Leaflet + react-leaflet (MVP fast-path, CARTO Positron light tiles; MapLibre vector tiles deferred to post-MVP production), Apache ECharts | Incident geo-pinning, cluster geography, dashboard visuals |
 
 ## AI Model Set
 

@@ -1,29 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { UtilityBar } from "@/components/shell/utility-bar";
 import { AppNavbar } from "@/components/shell/app-navbar";
 import { PathBadge } from "@/components/patterns/path-badge";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { ArrowLeft, Construction } from "lucide-react";
 
 export default function ChallengeDetailPage() {
-  const [lang, setLang] = useState<"en" | "hi">("en");
+  const { t } = useLanguage();
   const params = useParams();
   const challengeId = params.id as string;
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-base)] text-[var(--text-primary)]">
       {/* Utility Bar + Navbar */}
-      <UtilityBar currentLang={lang} onLanguageChange={setLang} />
-      <AppNavbar
-        currentRole="citizen"
-        isPublic
-        currentLang={lang}
-        onLanguageChange={setLang}
-        onSignInClick={() => {}}
-      />
+      <UtilityBar />
+      <AppNavbar isPublic />
 
       <main
         id="main-content"
@@ -35,9 +30,7 @@ export default function ChallengeDetailPage() {
           className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--accent-innovation)] hover:underline underline-offset-4 mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          {lang === "en"
-            ? "Back to Challenges"
-            : "चुनौतियों पर वापस जाएं"}
+          {t("challengesPage.backToChallenges")}
         </Link>
 
         {/* Coming Soon */}
@@ -50,17 +43,28 @@ export default function ChallengeDetailPage() {
             </span>
           </div>
           <h1 className="text-xl font-bold text-[var(--text-primary)]">
-            {lang === "en"
-              ? "Challenge Passport Detail"
-              : "चैलेंज पासपोर्ट विवरण"}
+            {t("challengesPage.passportDetailTitle")}
           </h1>
           <p className="text-sm text-[var(--text-muted)] max-w-md mx-auto leading-relaxed">
-            {lang === "en"
-              ? "The full Challenge Passport detail view is under construction. This page will use the shared detail-tabs pattern to show overview, timeline, measurements, evidence, commitments, evaluation, and audit data."
-              : "चैलेंज पासपोर्ट विवरण पृष्ठ निर्माणाधीन है। यह पृष्ठ अवलोकन, समयरेखा, माप, साक्ष्य, प्रतिबद्धताएं, मूल्यांकन, और ऑडिट डेटा दिखाएगा।"}
+            {t("challengesPage.passportDetailConstruction")}
           </p>
         </div>
       </main>
+
+      {/* Prototype Demo Disclaimer Footer */}
+      <footer className="w-full bg-[var(--brand-navy)] text-white mt-auto py-8 px-4">
+        <div className="mx-auto max-w-7xl text-center space-y-2 text-xs text-white/60">
+          <p className="font-semibold text-white/90">
+            JharSetu — {t("footer.portalName")}
+          </p>
+          <p className="text-amber-300/90 font-medium">
+            {t("footer.disclaimer")}
+          </p>
+          <p className="text-[11px] text-white/40">
+            {t("footer.sihBadge")}
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

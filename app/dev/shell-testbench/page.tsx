@@ -2,6 +2,13 @@
 
 import React, { useState } from "react";
 import { AppNavbar, UserRole } from "@/components/shell/app-navbar";
+
+/**
+ * Dev-only role type for the shell testbench role switcher.
+ * Matches the 5 authenticated roles from feature-spec 06-auth-and-dashboards.md.
+ * Citizen is listed here for UI preview ONLY — not an authenticated role in production.
+ */
+type DevRole = "ADMIN" | "DEPARTMENT_OFFICER" | "INNOVATION_CELL" | "UNIVERSITY" | "INDUSTRY" | "citizen";
 import { RoleSidebar } from "@/components/shell/role-sidebar";
 import { PathBadge } from "@/components/patterns/path-badge";
 import {
@@ -28,7 +35,7 @@ import {
 
 export default function ShellTestbenchPage() {
   const [lang, setLang] = useState<"en" | "hi">("en");
-  const [selectedRole, setSelectedRole] = useState<UserRole>("reviewer");
+  const [selectedRole, setSelectedRole] = useState<DevRole>("INNOVATION_CELL");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeNavItem, setActiveNavItem] = useState<string>("dashboard");
 
@@ -37,26 +44,15 @@ export default function ShellTestbenchPage() {
   const [certDialogOpen, setCertDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Authenticated user mock based on selected role
-  const currentUser =
-    selectedRole === "citizen"
-      ? null
-      : {
-          name:
-            selectedRole === "reviewer"
-              ? "Dr. Ananya Verma"
-              : selectedRole === "department_officer"
-              ? "Rajesh Murmu (EE, DW&S)"
-              : selectedRole === "government"
-              ? "Vikram Soren (IAS, Secretary)"
-              : selectedRole === "university"
-              ? "Prof. S. K. Roy (BIT Mesra)"
-              : selectedRole === "industry_csr"
-              ? "Tata Steel CSR Lead"
-              : "System Administrator",
-          role: selectedRole,
-          email: `${selectedRole}@jharsetu.jharkhand.gov.in`,
-        };
+  // Mock user names for demo preview
+  const ROLE_NAMES: Record<DevRole, string> = {
+    citizen: "Public Citizen",
+    ADMIN: "System Administrator",
+    DEPARTMENT_OFFICER: "Rajesh Murmu (EE, DW&S)",
+    INNOVATION_CELL: "Dr. Ananya Verma",
+    UNIVERSITY: "Prof. S. K. Roy (BIT Mesra)",
+    INDUSTRY: "Tata Steel CSR Lead",
+  };
 
   const triggerCivicToast = () => {
     toast.success("Acknowledgement Receipt Generated", {
@@ -78,27 +74,13 @@ export default function ShellTestbenchPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F8FA] text-[#111827]">
       {/* Official Government AppNavbar with 3px Tricolor Accent Line */}
+      {/* Simplified navbar — role switcher lives in the testbench controls below, not in the navbar */}
       <AppNavbar
-        currentRole={selectedRole}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         currentLang={lang}
         onLanguageChange={setLang}
-        user={currentUser}
-        onRoleChange={(role) => {
-          setSelectedRole(role);
-          if (role === "citizen") {
-            setSidebarOpen(false);
-          }
-        }}
-        onSignInClick={() => {
-          setSelectedRole("reviewer");
-          toast.info("Signed in as Reviewer (Demo Mode)");
-        }}
-        onSignOutClick={() => {
-          setSelectedRole("citizen");
-          toast.info("Signed out to Public Citizen view");
-        }}
+        pageTitle={`Dev Testbench [${selectedRole}]`}
       />
 
       {/* Floating Role Sidebar: Slides in from left, floats above page canvas without pushing content */}
@@ -137,13 +119,12 @@ export default function ShellTestbenchPage() {
               {(
                 [
                   "citizen",
-                  "reviewer",
-                  "department_officer",
-                  "government",
-                  "university",
-                  "industry_csr",
-                  "admin",
-                ] as UserRole[]
+                  "ADMIN",
+                  "DEPARTMENT_OFFICER",
+                  "INNOVATION_CELL",
+                  "UNIVERSITY",
+                  "INDUSTRY",
+                ] as DevRole[]
               ).map((role) => (
                 <button
                   key={role}
@@ -162,7 +143,7 @@ export default function ShellTestbenchPage() {
                       : "bg-white border border-[#E2E5EA] text-[#111827] hover:border-[#0F62B4]/50"
                   }`}
                 >
-                  {role === "citizen" ? "Citizen (Public)" : role.replace("_", " ")}
+                  {role === "citizen" ? "Citizen (Public)" : role.replace(/_/g, " ")}
                 </button>
               ))}
 

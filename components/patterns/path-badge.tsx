@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export type PathType = "A" | "B" | "C";
 
@@ -15,6 +18,7 @@ export const PATH_CONFIG: Record<
   {
     code: string;
     title: string;
+    hindiTitle: string;
     fullText: string;
     description: string;
     className: string;
@@ -24,14 +28,16 @@ export const PATH_CONFIG: Record<
   A: {
     code: "Path A",
     title: "Known Service",
+    hindiTitle: "ज्ञात सेवा",
     fullText: "Path A · Known Service",
-    description: "Referral to existing government scheme or service",
+    description: "Referral to existing public scheme or service",
     className: "bg-[#0F62B4]/10 text-[#0F62B4] border-[#0F62B4]/30",
     borderClass: "border-l-4 border-l-[#0F62B4]",
   },
   B: {
     code: "Path B",
     title: "Grievance Routing",
+    hindiTitle: "विभाग प्रेषण",
     fullText: "Path B · Grievance Routing",
     description: "Accountable routing to responsible authority/department",
     className: "bg-[#D97706]/10 text-[#D97706] border-[#D97706]/30",
@@ -40,6 +46,7 @@ export const PATH_CONFIG: Record<
   C: {
     code: "Path C",
     title: "Innovation Gap",
+    hindiTitle: "नवाचार अंतराल",
     fullText: "Path C · Innovation Gap",
     description: "Verified Innovation Gap Certificate for university-industry pilot",
     className: "bg-[#7C3AED]/10 text-[#7C3AED] border-[#7C3AED]/30",
@@ -53,7 +60,13 @@ export function PathBadge({
   customLabel,
   className = "",
 }: PathBadgeProps) {
+  const { language, t } = useLanguage();
   const config = PATH_CONFIG[path];
+
+  const translatedTitle =
+    customLabel ||
+    (path === "A" ? t("paths.pathAShort") : path === "B" ? t("paths.pathBShort") : t("paths.pathCShort")) ||
+    (language === "hi" ? config.hindiTitle : config.title);
 
   return (
     <Badge
@@ -65,7 +78,7 @@ export function PathBadge({
       {showLabel && (
         <>
           <span className="opacity-60">·</span>
-          <span className="font-normal">{customLabel || config.title}</span>
+          <span className="font-normal">{translatedTitle}</span>
         </>
       )}
     </Badge>

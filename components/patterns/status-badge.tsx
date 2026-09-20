@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/lib/i18n/language-context";
 import {
   Clock,
   CheckCircle2,
@@ -183,8 +186,14 @@ export function StatusBadge({
   showIcon = true,
   className = "",
 }: StatusBadgeProps) {
+  const { language, t } = useLanguage();
   const config = STATUS_CONFIG_MAP[status] || STATUS_CONFIG_MAP.SUBMITTED;
   const Icon = config.icon;
+
+  const displayLabel =
+    label ||
+    t(`statusMap.${status}`) ||
+    (language === "hi" ? config.hindiLabel : config.label);
 
   return (
     <Badge
@@ -192,13 +201,13 @@ export function StatusBadge({
       className={`inline-flex items-center gap-1.5 font-semibold text-xs px-2.5 py-0.5 rounded-md ${config.className} ${className}`}
     >
       {showIcon && <Icon className="h-3 w-3 shrink-0" />}
-      <span>{label || config.label}</span>
+      <span>{displayLabel}</span>
     </Badge>
   );
 }
 
 /**
- * Trust Badges: Government of Jharkhand pilot / Verified institution.
+ * Trust Badges: Prototype pilot / Verified institution.
  * Uses neutral/success tint, only rendered where actually true.
  */
 export type TrustBadgeType = "jharkhand-pilot" | "verified-institution" | "official-handoff";
@@ -218,7 +227,7 @@ export function TrustBadge({ type, label, className = "" }: TrustBadgeProps) {
           className={`inline-flex items-center gap-1.5 border-[#0F62B4]/30 bg-[#0F62B4]/5 text-[#0F62B4] font-medium text-xs px-2.5 py-0.5 rounded-md ${className}`}
         >
           <ShieldCheck className="h-3.5 w-3.5 text-[#0F62B4]" />
-          <span>{label || "Government of Jharkhand pilot"}</span>
+          <span>{label || "Prototype Pilot"}</span>
         </Badge>
       );
     case "verified-institution":

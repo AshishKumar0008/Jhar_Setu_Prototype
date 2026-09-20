@@ -10,6 +10,7 @@ import {
   type StatusCode,
 } from "@/components/patterns/status-badge";
 import { TrustBadge } from "@/components/patterns/status-badge";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { ArrowRight, Filter } from "lucide-react";
 
 /** Public-safe challenge card data — no PII, no exact coordinates, no internal notes */
@@ -83,7 +84,7 @@ const CATEGORIES = [
 ];
 
 export default function PublicChallengesPage() {
-  const [lang, setLang] = useState<"en" | "hi">("en");
+  const { language, t } = useLanguage();
   const [districtFilter, setDistrictFilter] = useState("All Districts");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
 
@@ -98,14 +99,8 @@ export default function PublicChallengesPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-base)] text-[var(--text-primary)]">
       {/* Utility Bar + Navbar */}
-      <UtilityBar currentLang={lang} onLanguageChange={setLang} />
-      <AppNavbar
-        currentRole="citizen"
-        isPublic
-        currentLang={lang}
-        onLanguageChange={setLang}
-        onSignInClick={() => {}}
-      />
+      <UtilityBar />
+      <AppNavbar isPublic />
 
       {/* ───── Main Content ───── */}
       <main
@@ -115,17 +110,13 @@ export default function PublicChallengesPage() {
         {/* Eyebrow + Heading */}
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-[var(--accent-innovation)] mb-2">
-            VERIFIED INNOVATION CHALLENGES / सत्यापित नवाचार चुनौतियाँ
+            {t("challengesPage.eyebrow")}
           </p>
           <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] leading-tight">
-            {lang === "en"
-              ? "Some problems need a new solution."
-              : "कुछ समस्याओं के लिए नया समाधान चाहिए।"}
+            {t("challengesPage.title")}
           </h1>
           <p className="text-sm text-[var(--text-muted)] mt-2 max-w-2xl leading-relaxed">
-            {lang === "en"
-              ? "These are recurring, evidence-verified gaps that have been opened to university and industry pilots."
-              : "ये बार-बार आने वाली, साक्ष्य-सत्यापित कमियाँ हैं जो विश्वविद्यालय और उद्योग पायलट के लिए खोली गई हैं।"}
+            {t("challengesPage.description")}
           </p>
         </div>
 
@@ -140,7 +131,7 @@ export default function PublicChallengesPage() {
           >
             {DISTRICTS.map((d) => (
               <option key={d} value={d}>
-                {d}
+                {d === "All Districts" ? t("challengesPage.filterAllDistricts") : d}
               </option>
             ))}
           </select>
@@ -152,7 +143,11 @@ export default function PublicChallengesPage() {
           >
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {c === "All Categories"
+                  ? t("challengesPage.filterAllCategories")
+                  : language === "hi" && t(`categoryMap.${c}`)
+                  ? t(`categoryMap.${c}`)
+                  : c}
               </option>
             ))}
           </select>
@@ -194,7 +189,11 @@ export default function PublicChallengesPage() {
                     <span className="text-[var(--border-default)]">•</span>
                     <span>{challenge.block} Block</span>
                     <span className="text-[var(--border-default)]">•</span>
-                    <span>{challenge.category}</span>
+                    <span>
+                      {language === "hi" && t(`categoryMap.${challenge.category}`)
+                        ? t(`categoryMap.${challenge.category}`)
+                        : challenge.category}
+                    </span>
                   </div>
                 </div>
 
@@ -203,9 +202,7 @@ export default function PublicChallengesPage() {
                   href={`/challenges/${challenge.id}`}
                   className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--accent-innovation)] hover:underline underline-offset-4 group"
                 >
-                  {lang === "en"
-                    ? "View Full Passport"
-                    : "पूरा पासपोर्ट देखें"}
+                  {t("challengesPage.viewFullPassport")}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </article>
@@ -215,18 +212,29 @@ export default function PublicChallengesPage() {
           /* Empty state */
           <div className="rounded-xl border border-[var(--border-default)] bg-white p-10 text-center">
             <p className="text-sm font-semibold text-[var(--text-primary)] mb-1">
-              {lang === "en"
-                ? "No verified challenges yet."
-                : "अभी तक कोई सत्यापित चुनौती नहीं।"}
+              {t("challengesPage.noChallenges")}
             </p>
             <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto leading-relaxed">
-              {lang === "en"
-                ? "Once a citizen report is confirmed as a genuine innovation gap, it will appear here."
-                : "जब किसी नागरिक शिकायत की पुष्टि वास्तविक नवाचार अंतर के रूप में हो जाएगी, तो वह यहाँ दिखाई देगी।"}
+              {t("challengesPage.noChallengesSub")}
             </p>
           </div>
         )}
       </main>
+
+      {/* Prototype Demo Disclaimer Footer */}
+      <footer className="w-full bg-[var(--brand-navy)] text-white mt-auto py-8 px-4">
+        <div className="mx-auto max-w-7xl text-center space-y-2 text-xs text-white/60">
+          <p className="font-semibold text-white/90">
+            JharSetu — {t("footer.portalName")}
+          </p>
+          <p className="text-amber-300/90 font-medium">
+            {t("footer.disclaimer")}
+          </p>
+          <p className="text-[11px] text-white/40">
+            {t("footer.sihBadge")}
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

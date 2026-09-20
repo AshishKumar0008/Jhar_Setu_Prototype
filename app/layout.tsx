@@ -1,7 +1,9 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter, Noto_Sans_Devanagari, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { LanguageProvider } from "@/lib/i18n/language-context";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -23,9 +25,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JharSetu | झारसेतु — Government of Jharkhand",
+  title: "JharSetu | झारसेतु — Societal Innovation Collaboration Portal",
   description:
-    "Privacy-preserving, human-governed platform turning citizen problem reports into accountable civic and innovation outcomes.",
+    "Prototype platform for connecting citizens, public problem management, universities, innovation teams, and industry partners.",
 };
 
 export default function RootLayout({
@@ -39,8 +41,27 @@ export default function RootLayout({
       className={`${inter.variable} ${notoSansDevanagari.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-bg-base text-text-primary">
-        {children}
-        <Toaster position="top-right" />
+        <LanguageProvider>
+          <ClerkProvider
+            appearance={{
+              variables: {
+                colorPrimary: "#0F62B4",
+                colorForeground: "#111827",
+                colorBackground: "#FFFFFF",
+                borderRadius: "0.75rem",
+                fontFamily: "var(--font-inter), sans-serif",
+              },
+              elements: {
+                card: "shadow-sm border border-[#E2E5EA] rounded-xl",
+                formButtonPrimary: "bg-[#0F62B4] hover:bg-[#0C4E90] text-white font-medium text-sm transition-colors",
+                footerActionLink: "text-[#0F62B4] hover:text-[#0C4E90] font-medium",
+              },
+            }}
+          >
+            {children}
+            <Toaster position="top-right" />
+          </ClerkProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

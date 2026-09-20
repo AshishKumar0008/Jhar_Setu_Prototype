@@ -1,108 +1,72 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { TricolorLine } from "@/components/patterns/tricolor-line";
+import { Logo } from "@/components/branding/logo";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useLanguage } from "@/lib/i18n/language-context";
 import {
   PanelLeftOpen,
   PanelLeftClose,
   LogIn,
-  LogOut,
-  UserCheck,
-  ChevronDown,
 } from "lucide-react";
+import { Show, UserButton } from "@clerk/nextjs";
 
+/**
+ * Authenticated roles per feature-spec 06-auth-and-dashboards.md.
+ * Citizens are NOT authenticated — they are always "public".
+ * Role-switching is only available on /dev/shell-testbench.
+ */
+export type AuthRole =
+  | "ADMIN"
+  | "DEPARTMENT_OFFICER"
+  | "INNOVATION_CELL"
+  | "UNIVERSITY"
+  | "INDUSTRY";
+
+/**
+ * @deprecated Use AuthRole instead.
+ * Kept for backwards-compatibility with role-sidebar.tsx and dev testbench
+ */
 export type UserRole =
+  | AuthRole
   | "citizen"
-  | "assisted_operator"
   | "reviewer"
   | "department_officer"
   | "government"
   | "university"
   | "industry_csr"
-  | "admin";
-
-export interface NavbarUser {
-  name: string;
-  role: UserRole;
-  email?: string;
-  avatarUrl?: string;
-}
+  | "admin"
+  | "assisted_operator";
 
 export interface AppNavbarProps {
-  currentRole?: UserRole;
   isPublic?: boolean;
   sidebarOpen?: boolean;
   onToggleSidebar?: () => void;
   currentLang?: "en" | "hi";
   onLanguageChange?: (lang: "en" | "hi") => void;
-  user?: NavbarUser | null;
-  onSignInClick?: () => void;
-  onSignOutClick?: () => void;
-  onRoleChange?: (role: UserRole) => void;
   pageTitle?: React.ReactNode;
   className?: string;
 }
 
-const ROLE_DISPLAY_NAMES: Record<UserRole, { en: string; hi: string }> = {
-  citizen: { en: "Citizen", hi: "नागरिक" },
-  assisted_operator: { en: "Assisted Operator", hi: "सहायक ऑपरेटर" },
-  reviewer: { en: "Reviewer", hi: "समीक्षक" },
-  department_officer: { en: "Department Officer", hi: "विभागीय अधिकारी" },
-  government: { en: "Government", hi: "सरकार" },
-  university: { en: "University", hi: "विश्वविद्यालय" },
-  industry_csr: { en: "Industry & CSR", hi: "उद्योग व सीएसआर" },
-  admin: { en: "Admin", hi: "प्रशासक" },
-};
-
-export function isInternalRole(role?: UserRole): boolean {
-  if (!role) return false;
-  return [
-    "reviewer",
-    "department_officer",
-    "government",
-    "university",
-    "industry_csr",
-    "admin",
-  ].includes(role);
-}
-
 export function AppNavbar({
-  currentRole = "citizen",
   isPublic,
   sidebarOpen = false,
   onToggleSidebar,
-  currentLang = "en",
-  onLanguageChange,
-  user,
-  onSignInClick,
-  onSignOutClick,
-  onRoleChange,
   pageTitle,
   className = "",
 }: AppNavbarProps) {
-  const [lang, setLang] = useState<"en" | "hi">(currentLang);
-  const [roleMenuOpen, setRoleMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
-  // Derive whether this is an internal role requiring the sidebar toggle
-  const showSidebarToggle =
-    isPublic !== undefined ? !isPublic : isInternalRole(currentRole);
-
-  const handleLangToggle = (selected: "en" | "hi") => {
-    setLang(selected);
-    onLanguageChange?.(selected);
-  };
-
-  const handleSelectRole = (role: UserRole) => {
-    onRoleChange?.(role);
-    setRoleMenuOpen(false);
-  };
+  // Show sidebar toggle only for authenticated internal routes
+  const showSidebarToggle = !isPublic;
 
   return (
     <header className={`sticky top-0 z-40 w-full bg-white border-b border-[#E2E5EA] ${className}`}>
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-2.5 sm:px-6 lg:px-8 gap-1.5 sm:gap-4">
-        {/* Left Section: Sidebar Toggle (internal roles only) + Logo / Emblem + Bilingual Title */}
+        {/* Left Section: Sidebar Toggle (internal routes only) + Global Logo */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
           {showSidebarToggle && (
             <button
@@ -120,53 +84,11 @@ export function AppNavbar({
             </button>
           )}
 
-          <Link
-            href="/"
-            className="flex items-center gap-1.5 sm:gap-3 text-[#111827] hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F62B4] rounded-md p-0.5 min-w-0"
-            aria-label="JharSetu Jharkhand Home"
-          >
-            {/* Circular Emblem / Logo slot */}
-            <div
-              className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-[#F7F8FA] border border-[#E2E5EA] text-[#0F62B4] font-semibold text-xs text-center leading-tight shadow-none"
-              aria-hidden="true"
-            >
-              <svg
-                className="h-5 w-5 sm:h-6 sm:w-6 text-[#0F62B4]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M4 22h16" />
-                <path d="M6 18v4" />
-                <path d="M18 18v4" />
-                <path d="M5 6h14" />
-                <path d="M7 6v12" />
-                <path d="M12 6v12" />
-                <path d="M17 6v12" />
-                <path d="M12 2l8 4H4l8-4z" />
-              </svg>
-            </div>
-
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-baseline gap-1 sm:gap-2">
-                <span className="font-bold text-base sm:text-lg leading-tight tracking-tight text-[#111827]">
-                  JharSetu
-                </span>
-                <span className="font-normal text-xs sm:text-sm text-[#6B7280]">
-                  झारसेतु
-                </span>
-              </div>
-              <span className="hidden sm:block text-[11px] text-[#6B7280] font-medium tracking-wide truncate">
-                Government of Jharkhand • झारखंड सरकार
-              </span>
-            </div>
-          </Link>
+          {/* Reusable JharSetu Logo */}
+          <Logo variant="full" size="sm" className="min-w-0" />
         </div>
 
-        {/* Center Section: Reserved for page title or breadcrumb in later chapters */}
+        {/* Center Section: Page title / breadcrumb */}
         <div className="flex-1 shrink min-w-0 flex justify-center items-center px-1 sm:px-2">
           {pageTitle ? (
             <div className="text-xs sm:text-sm font-semibold text-[#111827] truncate max-w-[120px] sm:max-w-md">
@@ -175,150 +97,45 @@ export function AppNavbar({
           ) : null}
         </div>
 
-        {/* Right Section: Language toggle + Sign in / Role menu */}
+        {/* Right Section: Language switcher + Clerk auth control */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Language Toggle (English / हिंदी segmented control) */}
-          <div
-            className="flex items-center rounded-md border border-[#E2E5EA] bg-[#F7F8FA] p-0.5 text-xs"
-            role="group"
-            aria-label="Select language / भाषा चुनें"
-          >
-            <button
-              type="button"
-              onClick={() => handleLangToggle("en")}
-              className={`min-h-[28px] sm:min-h-[32px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded text-[11px] sm:text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F62B4] ${
-                lang === "en"
-                  ? "bg-white text-[#0F62B4] shadow-xs font-semibold"
-                  : "text-[#6B7280] hover:text-[#111827]"
-              }`}
-              aria-pressed={lang === "en"}
-            >
-              English
-            </button>
-            <button
-              type="button"
-              onClick={() => handleLangToggle("hi")}
-              className={`min-h-[28px] sm:min-h-[32px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded text-[11px] sm:text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F62B4] ${
-                lang === "hi"
-                  ? "bg-white text-[#0F62B4] shadow-xs font-semibold"
-                  : "text-[#6B7280] hover:text-[#111827]"
-              }`}
-              aria-pressed={lang === "hi"}
-            >
-              हिंदी
-            </button>
-          </div>
+          {/* Centralized Language Switcher */}
+          <LanguageSwitcher variant="navbar" />
 
-          {/* User / Sign In control: Outline style, becomes user/role menu once authenticated */}
-          {user ? (
-            <div className="relative">
+          {/* Clerk Auth Control */}
+          <Show when="signed-in">
+            {/* Signed-in: show Clerk UserButton only */}
+            <UserButton
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: "h-8 w-8 sm:h-9 sm:w-9 border border-[#E2E5EA]",
+                },
+              }}
+            />
+          </Show>
+
+          <Show when="signed-out">
+            {/* Signed-out: Officer Sign In button */}
+            <Link href="/sign-in">
               <Button
+                id="navbar-officer-sign-in"
                 variant="outline"
                 size="sm"
-                onClick={() => setRoleMenuOpen(!roleMenuOpen)}
-                className="min-h-[30px] sm:min-h-[36px] border-[#E2E5EA] text-[#111827] hover:bg-[#F7F8FA] font-medium text-xs px-2 sm:px-3 gap-1 sm:gap-2"
-                aria-expanded={roleMenuOpen}
-                aria-haspopup="menu"
+                className="min-h-[30px] sm:min-h-[36px] border-[#E2E5EA] text-[#111827] hover:bg-[#F7F8FA] hover:text-[#0F62B4] font-medium text-xs px-2 sm:px-3"
               >
-                <UserCheck className="h-3.5 w-3.5 text-[#0F62B4] shrink-0" />
-                <span className="font-semibold text-[11px] sm:text-xs truncate max-w-[65px] sm:max-w-[120px]">
-                  {ROLE_DISPLAY_NAMES[user.role]?.en || user.role}
-                </span>
-                <ChevronDown className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#6B7280] shrink-0" />
+                <LogIn className="h-3.5 w-3.5 sm:mr-1 text-[#0F62B4] shrink-0" />
+                <span className="hidden sm:inline">{t("nav.officerSignIn")}</span>
+                <span className="sm:hidden">{t("nav.officerSignIn")}</span>
               </Button>
-
-              {roleMenuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-50 bg-transparent"
-                    onClick={() => setRoleMenuOpen(false)}
-                    aria-hidden="true"
-                  />
-                  <div
-                    role="menu"
-                    className="absolute right-0 mt-1.5 w-56 rounded-xl border border-[#E2E5EA] bg-white p-1.5 shadow-lg z-50 focus:outline-none"
-                  >
-                    <div className="px-3 py-2 border-b border-[#E2E5EA] mb-1">
-                      <p className="text-xs font-semibold text-[#111827] truncate">
-                        {user.name}
-                      </p>
-                      {user.email && (
-                        <p className="text-[11px] text-[#6B7280] truncate">
-                          {user.email}
-                        </p>
-                      )}
-                      <p className="text-[10px] text-[#0F62B4] font-medium mt-0.5 uppercase tracking-wider">
-                        Role: {ROLE_DISPLAY_NAMES[user.role]?.en}
-                      </p>
-                    </div>
-
-                    <div className="py-1">
-                      <p className="px-3 py-1 text-[11px] font-semibold text-[#6B7280]">
-                        Switch Role (Demo Mode):
-                      </p>
-                      {(
-                        [
-                          "citizen",
-                          "reviewer",
-                          "department_officer",
-                          "government",
-                          "university",
-                          "industry_csr",
-                          "admin",
-                        ] as UserRole[]
-                      ).map((r) => (
-                        <button
-                          key={r}
-                          type="button"
-                          onClick={() => handleSelectRole(r)}
-                          className={`w-full text-left px-3 py-1.5 text-xs rounded-md flex items-center justify-between transition-colors ${
-                            user.role === r
-                              ? "bg-[#0F62B4]/10 text-[#0F62B4] font-semibold"
-                              : "text-[#111827] hover:bg-[#F7F8FA]"
-                          }`}
-                        >
-                          <span>{ROLE_DISPLAY_NAMES[r]?.en}</span>
-                          <span className="text-[11px] text-[#6B7280]">
-                            {ROLE_DISPLAY_NAMES[r]?.hi}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="pt-1 border-t border-[#E2E5EA] mt-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setRoleMenuOpen(false);
-                          onSignOutClick?.();
-                        }}
-                        className="w-full text-left px-3 py-1.5 text-xs rounded-md text-[#DC2626] hover:bg-red-50 flex items-center gap-1.5 transition-colors"
-                      >
-                        <LogOut className="h-3.5 w-3.5" />
-                        <span>Sign out / प्रस्थान</span>
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onSignInClick}
-              className="min-h-[30px] sm:min-h-[36px] border-[#E2E5EA] text-[#111827] hover:bg-[#F7F8FA] hover:text-[#0F62B4] font-medium text-xs px-2 sm:px-3"
-            >
-              <LogIn className="h-3.5 w-3.5 sm:mr-1 text-[#0F62B4] shrink-0" />
-              <span className="hidden sm:inline">Sign in / प्रवेश</span>
-              <span className="sm:hidden">Sign in</span>
-            </Button>
-          )}
+            </Link>
+          </Show>
         </div>
       </div>
 
-      {/* 3px Tricolor Accent Line: Saffron / White / Green directly under navbar, rendered here once only */}
+      {/* 3px Tricolor Accent Line */}
       <TricolorLine />
     </header>
   );
 }
+
+export default AppNavbar;

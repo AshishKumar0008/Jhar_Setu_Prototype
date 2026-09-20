@@ -1,4 +1,4 @@
-# Jhar_Setu
+# Jhar_Setu_Prototype
 
 JharSetu is a privacy-preserving, human-governed platform that turns citizen problem reports into accountable civic outcomes: Existing Service Referral (Path A), Grievance Routing (Path B), or an Innovation Gap Certificate for field pilots (Path C).
 
